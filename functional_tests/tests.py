@@ -9,15 +9,24 @@ class NewVisitorTest(LiveServerTestCase):
         self.browser.implicitly_wait(3)
 
     def tearDown(self):
+        # RAGNAROK INVOKED
         self.browser.quit()
 
-    def assertRowsInTable(self, table, expected_texts):
+    def assertRowsInTable(self, expected_texts):
+        return self._assertRowsInTable(expected_texts)
+
+    def assertRowsNotInTable(self, expected_texts):
+        return self._assertRowsInTable(expected_texts, negate=True)
+
+    def _assertRowsInTable(self, expected_texts, negate=False):
+        method = self.assertNotIn if negate else self.assertIn
+        table = self.browser.find_element_by_id('id_list_table')
         row_text = [row.text for row in table.find_elements_by_tag_name('tr')]
         for expected in expected_texts:
-            self.assertIn(expected, row_text)
+            method(expected, row_text)
 
     def test_can_start_a_list_and_get_it_later(self):
-        # Go to our super-sweet to-do list-app
+        # Edith goes to our super-sweet to-do list-app
         self.browser.get(self.live_server_url)
 
         # it screams "TO-DO" in a heading
@@ -37,10 +46,12 @@ class NewVisitorTest(LiveServerTestCase):
         # Types: 'get peanut butters' (I'm hungry)
         inputbox.send_keys('get peanut butters')
 
-        # When return is hit, update the page and put the item into a list.
+        # When return is hit, take the user to a new URL and display
+        # the item in a list.
         inputbox.send_keys(Keys.ENTER)
-        table = self.browser.find_element_by_id('id_list_table')
-        self.assertRowsInTable(table, [
+        ediths_list_url = self.browser.current_url
+        self.assertRegex(ediths_list_url, '/lists/.+')
+        self.assertRowsInTable([
             '1. get peanut butters',
         ])
 
@@ -51,16 +62,39 @@ class NewVisitorTest(LiveServerTestCase):
         inputbox.send_keys(Keys.ENTER)
 
         # Page updates, both items showing.
-        table = self.browser.find_element_by_id('id_list_table')
-        self.assertRowsInTable(table, [
+        self.assertRowsInTable([
             '1. get peanut butters',
             '2. put butters',
         ])
 
-        # The app will tell the user that the URL changes to reflect the
-        # uniqueness of the list
+        ## remove session from browser
+        self.browser.quit()
+        self.browser = webdriver.Chrome()
 
-        # Going to that URL, the list is still there.
+        # frank visits app, expects a clear list (not edith's stuff)
+        self.browser.get(self.live_server_url)
+        self.assertRowsNotInTable([
+            '1. get peanut butters',
+            '2. put butters',
+        ])
 
-        ...
-        self.fail('Written tests passing, but there is more to-do...')
+        # frank starts a list
+        inputbox = self.browser.find_element_by_id('id_new_item')
+        inputbox.send_keys('brew coffee')
+        inputbox.send_keys(Keys.ENTER)
+
+        # frank gets his URL
+        franks_list_url = self.browser.current_url
+        self.assertRegex(franks_list_url, '/list/.+')
+        self.assertNotEqual(franks_list_url, ediths_list_url)
+
+        # still nothing from edith shows up
+        self.assertRowsNotInTable([
+            '1. get peanut butters',
+            '2. put butters',
+        ])
+        self.assertRowsInTable([
+            '1. brew coffee'
+        ])
+
+        # satisfied, they both invoke ragnarok.
