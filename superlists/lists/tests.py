@@ -4,7 +4,7 @@ from django.template.loader import render_to_string
 from django.http import HttpRequest
 
 from lists.views import home_page
-
+from lists.models import Item
 
 class HomePageTest(TestCase):
     def test_root_url_resolves_to_home_page_view(self):
@@ -38,3 +38,21 @@ class HomePageTest(TestCase):
             response.content.decode(encoding='utf-8'),
             expected_html
         )
+
+class ItemModelTest(TestCase):
+
+    def test_saving_and_retreiving_items(self):
+        first_item = Item()
+        first_item.text = 'The first ITEM'
+        first_item.save()
+
+        another_item = Item()
+        another_item.text = 'Something else.'
+        another_item.save()
+
+        saved_items = Item.objects.all()
+        self.assertEqual(saved_items.count(), 2)
+        first_retreived = saved_items[0]
+        another_retreived = saved_items[1]
+        self.assertEqual(first_retreived.text, 'The first ITEM')
+        self.assertEqual(another_retreived.text, 'Something else.')
