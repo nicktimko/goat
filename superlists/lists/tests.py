@@ -29,30 +29,63 @@ class HomePageTest(TestCase):
 
         response = home_page(request)
 
-        self.assertIn(my_item, response.content.decode(encoding='utf-8'))
-        expected_html = render_to_string(
-            'lists/home.html',
-            {'new_item_text': my_item}
-        )
-        self.assertEqual(
-            response.content.decode(encoding='utf-8'),
-            expected_html
-        )
+        self.assertEqual(Item.objects.count(), 1)
+        new_item = Item.objects.first()
+        self.assertEqual(new_item.text, my_item)
+
+    def test_home_page_redirects_after_post(self):
+        request = HttpRequest()
+        request.method = 'POST'
+        request.POST['item_text'] = 'asdf'
+
+        response = home_page(request)
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response['location'], '/')
+
+        # self.assertIn(my_item, response.content.decode(encoding='utf-8'))
+        # expected_html = render_to_string(
+        #     'lists/home.html',
+        #     {'new_item_text': my_item}
+        # )
+        # self.assertEqual(
+        #     response.content.decode(encoding='utf-8'),
+        #     expected_html
+        # )
+
+    def test_home_page_displays_multiple_items(self):
+        Item.objects.create(text='item1')
+        Item.objects.create(text='item2')
+
+        request = HttpRequest()
+        response = home_page(request)
+
+        self.assertIn('item1', response.content.decode())
+        self.assertIn('item2', response.content.decode())
+
+    def test_home_page_only_saves_when_necessary(self):
+        request = HttpRequest()
+        home_page(request)
+        self.assertEqual(Item.objects.count(), 0)
+
 
 class ItemModelTest(TestCase):
 
     def test_saving_and_retreiving_items(self):
+        first_text = 'The first ITEM'
+        more_text = 'Something else.'
+
         first_item = Item()
-        first_item.text = 'The first ITEM'
+        first_item.text = first_text
         first_item.save()
 
         another_item = Item()
-        another_item.text = 'Something else.'
+        another_item.text = more_text
         another_item.save()
 
         saved_items = Item.objects.all()
         self.assertEqual(saved_items.count(), 2)
         first_retreived = saved_items[0]
         another_retreived = saved_items[1]
-        self.assertEqual(first_retreived.text, 'The first ITEM')
-        self.assertEqual(another_retreived.text, 'Something else.')
+        self.assertEqual(first_retreived.text, first_text)
+        self.assertEqual(another_retreived.text, more_text)
