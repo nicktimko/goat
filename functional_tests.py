@@ -14,7 +14,7 @@ class NewVisitorTest(unittest.TestCase):
         self.browser.get('http://localhost:8000')
 
         # Check title for bookmarking
-        self.assertIn('To-do', self.browser.title)
+        self.assertIn('To-Do', self.browser.title)
 
         # Prompt to enter a new item immediately
 
