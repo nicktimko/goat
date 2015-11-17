@@ -3,6 +3,7 @@ import unittest
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 
+
 class NewVisitorTest(unittest.TestCase):
     def setUp(self):
         self.browser = webdriver.Chrome()
@@ -35,24 +36,28 @@ class NewVisitorTest(unittest.TestCase):
         # When return is hit, update the page and put the item into a list.
         inputbox.send_keys(Keys.ENTER)
         table = self.browser.find_element_by_id('id_list_table')
-        rows = table.find_elements_by_tag_name('tr')
-        self.assertTrue(
-            any(row.text == '1. get peanut butters' for row in rows),
-            "New to-do item did not appear in list."
-        )
+        row_text = [row.text for row in table.find_elements_by_tag_name('tr')]
+        self.assertIn('1. get peanut butters', row_text)
 
-        # Add another item is presented to the user. This time: 'put butters', return..
+        # Add another item is presented to the user.
+        # This time: 'put butters', return..
+        inputbox = self.browser.find_element_by_id('id_new_item')
+        inputbox.send_keys('put butters')
+        inputbox.send_keys(Keys.ENTER)
 
         # Page updates, both items showing.
+        table = self.browser.find_element_by_id('id_list_table')
+        row_text = [row.text for row in table.find_elements_by_tag_name('tr')]
+        self.assertIn('1. get peanut butters', row_text)
+        self.assertIn('2. put butters', row_text)
 
-        # The app will tell the user that the URL changes to reflect the uniqueness of
-        # the list
+        # The app will tell the user that the URL changes to reflect the
+        # uniqueness of the list
 
         # Going to that URL, the list is still there.
 
         ...
-        self.fail('To-do...')
+        self.fail('Written tests passing, but there is more to-do...')
 
 if __name__ == '__main__':
-    #unittest.main(warnings='ignore')
     unittest.main()
