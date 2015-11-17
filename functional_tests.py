@@ -12,6 +12,11 @@ class NewVisitorTest(unittest.TestCase):
     def tearDown(self):
         self.browser.quit()
 
+    def assertRowsInTable(self, table, expected_texts):
+        row_text = [row.text for row in table.find_elements_by_tag_name('tr')]
+        for expected in expected_texts:
+            self.assertIn(expected, row_text)
+
     def test_can_start_a_list_and_get_it_later(self):
         # Go to our super-sweet to-do list-app
         self.browser.get('http://localhost:8000')
@@ -36,8 +41,9 @@ class NewVisitorTest(unittest.TestCase):
         # When return is hit, update the page and put the item into a list.
         inputbox.send_keys(Keys.ENTER)
         table = self.browser.find_element_by_id('id_list_table')
-        row_text = [row.text for row in table.find_elements_by_tag_name('tr')]
-        self.assertIn('1. get peanut butters', row_text)
+        self.assertRowsInTable(table, [
+            '1. get peanut butters',
+        ])
 
         # Add another item is presented to the user.
         # This time: 'put butters', return..
@@ -47,9 +53,10 @@ class NewVisitorTest(unittest.TestCase):
 
         # Page updates, both items showing.
         table = self.browser.find_element_by_id('id_list_table')
-        row_text = [row.text for row in table.find_elements_by_tag_name('tr')]
-        self.assertIn('1. get peanut butters', row_text)
-        self.assertIn('2. put butters', row_text)
+        self.assertRowsInTable(table, [
+            '1. get peanut butters',
+            '2. put butters',
+        ])
 
         # The app will tell the user that the URL changes to reflect the
         # uniqueness of the list
