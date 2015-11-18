@@ -4,7 +4,7 @@ from django.template.loader import render_to_string
 from django.http import HttpRequest
 
 from lists.views import home_page
-from lists.models import Item
+from lists.models import Item, List
 
 class HomePageTest(TestCase):
     def test_root_url_resolves_to_home_page_view(self):
@@ -21,26 +21,36 @@ class HomePageTest(TestCase):
         )
 
 
-class ItemModelTest(TestCase):
+class ListAndItemModelTest(TestCase):
 
     def test_saving_and_retreiving_items(self):
+        list_ = List()
+        list_.save()
+
         first_text = 'The first ITEM'
         more_text = 'Something else.'
 
         first_item = Item()
         first_item.text = first_text
+        first_item.list = list_
         first_item.save()
 
         another_item = Item()
         another_item.text = more_text
+        another_item.list = list_
         another_item.save()
+
+        saved_list = List.objects.first()
+        self.assertEqual(saved_list, list_)
 
         saved_items = Item.objects.all()
         self.assertEqual(saved_items.count(), 2)
         first_retreived = saved_items[0]
         another_retreived = saved_items[1]
         self.assertEqual(first_retreived.text, first_text)
+        self.assertEqual(first_retreived.list, list_)
         self.assertEqual(another_retreived.text, more_text)
+        self.assertEqual(another_retreived.list, list_)
 
 
 class ListViewTest(TestCase):
@@ -50,8 +60,9 @@ class ListViewTest(TestCase):
         self.assertTemplateUsed(response, 'lists/list.html')
 
     def test_displays_all_items(self):
-        Item.objects.create(text='get coffee')
-        Item.objects.create(text='get tea')
+        list_ = List.objects.create()
+        Item.objects.create(text='get coffee', list=list_)
+        Item.objects.create(text='get tea', list=list_)
 
         response = self.client.get('/lists/one-list-to-rule-them-all/')
 
@@ -60,6 +71,14 @@ class ListViewTest(TestCase):
 
 
 class NewTestList(TestCase):
+
+    def test_block_get(self):
+        response = self.client.get('/lists/new')
+        self.assertEqual(response.status_code, 405)
+
+    def test_fail_400_bad_request(self):
+        response = self.client.post('/lists/new')
+        self.assertEqual(response.status_code, 400)
 
     def test_saving_a_post(self):
         my_item = 'Some to-do item'
