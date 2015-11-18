@@ -73,10 +73,9 @@ class NewVisitorTest(LiveServerTestCase):
 
         # frank visits app, expects a clear list (not edith's stuff)
         self.browser.get(self.live_server_url)
-        self.assertRowsNotInTable([
-            '1. get peanut butters',
-            '2. put butters',
-        ])
+        page_text = self.browser.find_element_by_tag_name('body').text
+        self.assertNotIn('get peanut butters', page_text)
+        self.assertNotIn('put butters', page_text)
 
         # frank starts a list
         inputbox = self.browser.find_element_by_id('id_new_item')

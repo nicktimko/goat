@@ -21,4 +21,5 @@ from lists import views
 urlpatterns = [
     #url(r'^admin/', include(admin.site.urls)),
     url(r'^$', views.home_page, name='home'),
+    url(r'^lists/one-list-to-rule-them-all/$', views.view_list, name='view_list'),
 ]

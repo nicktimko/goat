@@ -41,27 +41,7 @@ class HomePageTest(TestCase):
         response = home_page(request)
 
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response['location'], '/')
-
-        # self.assertIn(my_item, response.content.decode(encoding='utf-8'))
-        # expected_html = render_to_string(
-        #     'lists/home.html',
-        #     {'new_item_text': my_item}
-        # )
-        # self.assertEqual(
-        #     response.content.decode(encoding='utf-8'),
-        #     expected_html
-        # )
-
-    def test_home_page_displays_multiple_items(self):
-        Item.objects.create(text='item1')
-        Item.objects.create(text='item2')
-
-        request = HttpRequest()
-        response = home_page(request)
-
-        self.assertIn('item1', response.content.decode())
-        self.assertIn('item2', response.content.decode())
+        self.assertEqual(response['location'], '/lists/one-list-to-rule-them-all')
 
     def test_home_page_only_saves_when_necessary(self):
         request = HttpRequest()
@@ -89,3 +69,19 @@ class ItemModelTest(TestCase):
         another_retreived = saved_items[1]
         self.assertEqual(first_retreived.text, first_text)
         self.assertEqual(another_retreived.text, more_text)
+
+
+class ListViewTest(TestCase):
+
+    def test_uses_list_template(self):
+        response = self.client.get('/lists/one-list-to-rule-them-all/')
+        self.assertTemplateUsed(response, 'lists/list.html')
+
+    def test_displays_all_items(self):
+        Item.objects.create(text='get coffee')
+        Item.objects.create(text='get tea')
+
+        response = self.client.get('/lists/one-list-to-rule-them-all/')
+
+        self.assertContains(response, 'get coffee')
+        self.assertContains(response, 'get tea')
