@@ -84,7 +84,7 @@ class NewVisitorTest(LiveServerTestCase):
 
         # frank gets his URL
         franks_list_url = self.browser.current_url
-        self.assertRegex(franks_list_url, '/list/.+')
+        self.assertRegex(franks_list_url, '/lists/.+')
         self.assertNotEqual(franks_list_url, ediths_list_url)
 
         # still nothing from edith shows up
