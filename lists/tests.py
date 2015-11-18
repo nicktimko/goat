@@ -20,34 +20,6 @@ class HomePageTest(TestCase):
             expected_html
         )
 
-    def test_home_page_can_save_post_request(self):
-        my_item = 'Some to-do item'
-
-        request = HttpRequest()
-        request.method = 'POST'
-        request.POST['item_text'] = my_item
-
-        response = home_page(request)
-
-        self.assertEqual(Item.objects.count(), 1)
-        new_item = Item.objects.first()
-        self.assertEqual(new_item.text, my_item)
-
-    def test_home_page_redirects_after_post(self):
-        request = HttpRequest()
-        request.method = 'POST'
-        request.POST['item_text'] = 'asdf'
-
-        response = home_page(request)
-
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response['location'], '/lists/one-list-to-rule-them-all')
-
-    def test_home_page_only_saves_when_necessary(self):
-        request = HttpRequest()
-        home_page(request)
-        self.assertEqual(Item.objects.count(), 0)
-
 
 class ItemModelTest(TestCase):
 
@@ -85,3 +57,30 @@ class ListViewTest(TestCase):
 
         self.assertContains(response, 'get coffee')
         self.assertContains(response, 'get tea')
+
+
+class NewTestList(TestCase):
+
+    def test_saving_a_post(self):
+        my_item = 'Some to-do item'
+
+        self.client.post(
+            '/lists/new',
+            data={
+                'item_text': my_item,
+            },
+        )
+
+        self.assertEqual(Item.objects.count(), 1)
+        new_item = Item.objects.first()
+        self.assertEqual(new_item.text, my_item)
+
+    def test_redirects_after_post(self):
+        response = self.client.post(
+            '/lists/new',
+            data={
+                'item_text': 'asdf',
+            },
+        )
+
+        self.assertRedirects(response, '/lists/one-list-to-rule-them-all/')
