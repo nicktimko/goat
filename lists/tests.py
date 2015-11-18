@@ -56,21 +56,36 @@ class ListAndItemModelTest(TestCase):
 class ListViewTest(TestCase):
 
     def test_uses_list_template(self):
-        response = self.client.get('/lists/one-list-to-rule-them-all/')
+        list_ = List.objects.create()
+        response = self.client.get('/lists/{}/'.format(list_.id))
         self.assertTemplateUsed(response, 'lists/list.html')
 
-    def test_displays_all_items(self):
-        list_ = List.objects.create()
-        Item.objects.create(text='get coffee', list=list_)
-        Item.objects.create(text='get tea', list=list_)
+    def test_displays_items_for_corresponding_list(self):
+        correct_list = List.objects.create()
+        Item.objects.create(text='get coffee', list=correct_list)
+        Item.objects.create(text='get tea', list=correct_list)
+        other_list = List.objects.create()
+        Item.objects.create(text='get cheese', list=other_list)
+        Item.objects.create(text='get milk', list=other_list)
 
-        response = self.client.get('/lists/one-list-to-rule-them-all/')
+        response = self.client.get('/lists/{}/'.format(correct_list.id))
 
         self.assertContains(response, 'get coffee')
         self.assertContains(response, 'get tea')
+        self.assertNotContains(response, 'get cheese')
+        self.assertNotContains(response, 'get milk')
+
+    def test_passes_correect_list_to_template(self):
+        other_list = List.objects.create()
+        correct_list = List.objects.create()
+        another_list = List.objects.create()
+
+        response = self.client.get('/lists/{}/'.format(correct_list.id))
+
+        self.assertEqual(response.context['list'], correct_list)
 
 
-class NewTestList(TestCase):
+class NewListTest(TestCase):
 
     def test_block_get(self):
         response = self.client.get('/lists/new')
@@ -101,5 +116,35 @@ class NewTestList(TestCase):
                 'item_text': 'asdf',
             },
         )
+        list_ = List.objects.first()
+        self.assertRedirects(response, '/lists/{}/'.format(list_.id))
 
-        self.assertRedirects(response, '/lists/one-list-to-rule-them-all/')
+
+class NewItemTest(TestCase):
+
+    def test_can_save_a_post_request_to_existing_list(self):
+        other_list = List.objects.create()
+        correct_list = List.objects.create()
+        another_list = List.objects.create()
+
+        self.client.post(
+            '/lists/{}/add_item'.format(correct_list.id),
+            data={'item_text': 'New item!'},
+        )
+
+        self.assertEqual(Item.objects.count(), 1)
+        new_item = Item.objects.first()
+        self.assertEqual(new_item.text, 'New item!')
+        self.assertEqual(new_item.list, correct_list)
+
+    def test_redirects_to_list_view(self):
+        other_list = List.objects.create()
+        correct_list = List.objects.create()
+        another_list = List.objects.create()
+
+        response = self.client.post(
+            '/lists/{}/add_item'.format(correct_list.id),
+            data={'item_text': 'New item!'},
+        )
+
+        self.assertRedirects(response, '/lists/{}/'.format(correct_list.id))
