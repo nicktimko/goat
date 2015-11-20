@@ -42,3 +42,7 @@ class FunctionalTest(StaticLiveServerTestCase):
         row_text = [row.text for row in table.find_elements_by_tag_name('tr')]
         for expected in expected_texts:
             method(expected, row_text)
+
+    def add_new_item(self, keys):
+        inputbox = self.browser.find_element_by_id('id_new_item')
+        inputbox.send_keys(keys)
