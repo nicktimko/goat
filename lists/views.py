@@ -6,24 +6,32 @@ from django.views.decorators.http import require_http_methods
 from lists.models import Item, List
 
 
+EMPTY_LIST_ERROR = "You can't have an empty list item!"
+
 def home_page(request):
     return render(request, 'lists/home.html')
 
 
 def view_list(request, list_id):
     list_ = List.objects.get(id=list_id)
-    
+    error = None
+
     if request.method == 'POST':
-        item_text = request.POST['item_text']
-        Item.objects.create(
-            text=item_text,
-            list=list_,
-        )
-        return redirect('/lists/{}/'.format(list_.id))
+        try:
+            item = Item(
+                text=request.POST['item_text'],
+                list=list_,
+            )
+            item.full_clean()
+            item.save()
+            return redirect('/lists/{}/'.format(list_.id))
+        except ValidationError:
+            error = EMPTY_LIST_ERROR
 
     items = Item.objects.filter(list=list_)
     return render(request, 'lists/list.html', context={
         'list': list_,
+        'error': error,
     })
 
 
@@ -43,5 +51,5 @@ def new_list(request):
     except ValidationError:
         list_.delete()
         return render(request, 'lists/home.html', context={
-            'error': "You can't have an empty list item!",
+            'error': EMPTY_LIST_ERROR,
         })
