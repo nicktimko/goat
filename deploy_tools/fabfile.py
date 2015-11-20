@@ -1,10 +1,25 @@
 import os
 import base64
 
-from fabric.api import env, local, run
+from fabric.api import env, local, run, sudo
 from fabric.contrib.files import append, exists, sed
 
 REPO_URL = 'https://github.com/nicktimko/goat.git'
+
+
+def configure():
+    site_folder = '/home/{}/sites/{}'.format(env.user, env.host)
+    _create_upstart_script(site_folder)
+    _create_enable_nginx_site(site_folder)
+
+
+def _create_upstart_script(site_folder):
+    ...
+
+
+def _create_enable_nginx_site(site_folder):
+    ...
+
 
 def deploy():
     site_folder = '/home/{}/sites/{}'.format(env.user, env.host)

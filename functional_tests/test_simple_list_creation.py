@@ -1,48 +1,10 @@
-import sys
-
-from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 
+from .base import FunctionalTest
 
-class NewVisitorTest(StaticLiveServerTestCase):
 
-    @classmethod
-    def setUpClass(cls):
-        '''Short-circuit setting up our own server if we're doing it live.'''
-        for arg in sys.argv:
-            if 'liveserver' in arg:
-                cls.server_url = 'http://' + arg.split('=')[1]
-                return
-        super().setUpClass()
-        cls.server_url = cls.live_server_url
-
-    @classmethod
-    def tearDownClass(cls):
-        if cls.server_url == cls.live_server_url:
-            super().tearDownClass()
-
-    def setUp(self):
-        self.browser = webdriver.Chrome()
-        self.browser.implicitly_wait(3)
-
-    def tearDown(self):
-        # RAGNAROK INVOKED
-        self.browser.refresh() # shut up Windows
-        self.browser.quit()
-
-    def assertRowsInTable(self, expected_texts):
-        return self._assertRowsInTable(expected_texts)
-
-    def assertRowsNotInTable(self, expected_texts):
-        return self._assertRowsInTable(expected_texts, negate=True)
-
-    def _assertRowsInTable(self, expected_texts, negate=False):
-        method = self.assertNotIn if negate else self.assertIn
-        table = self.browser.find_element_by_id('id_list_table')
-        row_text = [row.text for row in table.find_elements_by_tag_name('tr')]
-        for expected in expected_texts:
-            method(expected, row_text)
+class NewVisitorTest(FunctionalTest):
 
     def test_can_start_a_list_and_get_it_later(self):
         # Edith goes to our super-sweet to-do list-app
@@ -116,25 +78,3 @@ class NewVisitorTest(StaticLiveServerTestCase):
         ])
 
         # satisfied, they both invoke ragnarok.
-
-    def test_layout_and_styling(self):
-        # shelly goes to the homepage
-        self.browser.get(self.server_url)
-        self.browser.set_window_size(1024, 768)
-
-        # she notices that the input box is nicely centered
-        inputbox = self.browser.find_element_by_id('id_new_item')
-        self.assertAlmostEqual(
-            inputbox.location['x'] + inputbox.size['width'] / 2,
-            512,
-            delta=20
-        )
-
-        # input on the add-an-item page is also good
-        inputbox.send_keys('buy beer\n')
-        inputbox = self.browser.find_element_by_id('id_new_item')
-        self.assertAlmostEqual(
-            inputbox.location['x'] + inputbox.size['width'] / 2,
-            512,
-            delta=20
-        )
