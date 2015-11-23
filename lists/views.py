@@ -3,13 +3,13 @@ from django.http import HttpResponseBadRequest
 from django.shortcuts import render, redirect
 from django.views.decorators.http import require_http_methods
 
-from lists.models import Item, List
-
+from .models import Item, List
+from .forms import ItemForm
 
 EMPTY_LIST_ERROR = "You can't have an empty list item!"
 
 def home_page(request):
-    return render(request, 'lists/home.html')
+    return render(request, 'lists/home.html', {'form': ItemForm()})
 
 
 def view_list(request, list_id):

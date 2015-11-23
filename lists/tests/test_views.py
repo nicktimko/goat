@@ -6,20 +6,18 @@ from django.utils.html import escape
 
 from ..views import home_page
 from ..models import Item, List
+from ..forms import ItemForm
+
 
 class HomePageTest(TestCase):
-    def test_root_url_resolves_to_home_page_view(self):
-        found = resolve('/')
-        self.assertEqual(found.func, home_page)
 
-    def test_home_page_returns_correct_html(self):
-        request = HttpRequest()
-        response = home_page(request)
-        expected_html = render_to_string('lists/home.html')
-        self.assertEqual(
-            response.content.decode(encoding='utf-8'),
-            expected_html
-        )
+    def test_home_page_renders_home_template(self):
+        response = self.client.get('/')
+        self.assertTemplateUsed(response, 'lists/home.html')
+
+    def test_home_page_uses_item_form(self):
+        response = self.client.get('/')
+        self.assertIsInstance(response.context['form'], ItemForm)
 
 
 class ListViewTest(TestCase):
