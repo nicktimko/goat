@@ -24,7 +24,7 @@ def view_list(request, list_id):
             )
             item.full_clean()
             item.save()
-            return redirect('/lists/{}/'.format(list_.id))
+            return redirect(list_)
         except ValidationError:
             error = EMPTY_LIST_ERROR
 
@@ -47,7 +47,7 @@ def new_list(request):
 
     try:
         item.full_clean()
-        return redirect('/lists/{}/'.format(list_.id))
+        return redirect(list_)
     except ValidationError:
         list_.delete()
         return render(request, 'lists/home.html', context={

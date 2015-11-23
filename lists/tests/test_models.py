@@ -4,6 +4,16 @@ from django.test import TestCase
 from ..models import Item, List
 
 
+class ListModelTest(TestCase):
+
+    def test_get_absolute_url(self):
+        list_ = List.objects.create()
+        self.assertEqual(
+            list_.get_absolute_url(),
+            '/lists/{}/'.format(list_.id)
+        )
+
+
 class ListAndItemModelTest(TestCase):
 
     def test_saving_and_retreiving_items(self):
