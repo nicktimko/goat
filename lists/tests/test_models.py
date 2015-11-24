@@ -1,3 +1,5 @@
+import hashlib
+
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 
@@ -14,36 +16,28 @@ class ListModelTest(TestCase):
         )
 
 
+class ItemModelTest(TestCase):
+
+    def test_useful_string_repr(self):
+        item = Item(text='Hello!')
+        self.assertEqual(
+            str(item),
+            'Hello!'
+        )
+
+    def test_default_text(self):
+        item = Item()
+        self.assertEqual(item.text, '')
+
+
 class ListAndItemModelTest(TestCase):
 
-    def test_saving_and_retreiving_items(self):
-        list_ = List()
-        list_.save()
-
-        first_text = 'The first ITEM'
-        more_text = 'Something else.'
-
-        first_item = Item()
-        first_item.text = first_text
-        first_item.list = list_
-        first_item.save()
-
-        another_item = Item()
-        another_item.text = more_text
-        another_item.list = list_
-        another_item.save()
-
-        saved_list = List.objects.first()
-        self.assertEqual(saved_list, list_)
-
-        saved_items = Item.objects.all()
-        self.assertEqual(saved_items.count(), 2)
-        first_retreived = saved_items[0]
-        another_retreived = saved_items[1]
-        self.assertEqual(first_retreived.text, first_text)
-        self.assertEqual(first_retreived.list, list_)
-        self.assertEqual(another_retreived.text, more_text)
-        self.assertEqual(another_retreived.list, list_)
+    def test_item_related_to_list(self):
+        list_ = List.objects.create()
+        item = Item()
+        item.list = list_
+        item.save()
+        self.assertIn(item, list_.item_set.all())
 
     def test_cannot_save_empty_items(self):
         list_ = List.objects.create()
@@ -51,3 +45,30 @@ class ListAndItemModelTest(TestCase):
         with self.assertRaises(ValidationError):
             item.save()
             item.full_clean()
+
+    def test_cannot_save_duplicates(self):
+        list_ = List.objects.create()
+        Item.objects.create(list=list_, text='Hello')
+        with self.assertRaises(ValidationError):
+            item = Item(list=list_, text='Hello')
+            item.full_clean()
+
+    def test_can_save_duplicates_to_different_lists(self):
+        list1 = List.objects.create()
+        list2 = List.objects.create()
+        Item.objects.create(list=list1, text='Hello')
+        item = Item(list=list2, text='Hello')
+        item.full_clean()
+
+    def test_list_ordering(self):
+        list_ = List.objects.create()
+
+        def md5(x):
+            return hashlib.md5(bytes([x])).hexdigest()
+        items = [
+            Item.objects.create(list=list_, text=md5(i))
+            for i
+            in range(10)
+        ]
+
+        self.assertEqual(list(Item.objects.all()), items)
