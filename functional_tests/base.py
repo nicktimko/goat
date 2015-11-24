@@ -43,6 +43,8 @@ class FunctionalTest(StaticLiveServerTestCase):
         for expected in expected_texts:
             method(expected, row_text)
 
+    def get_input_box(self):
+        return self.browser.find_element_by_id('id_text')
+
     def add_new_item(self, keys):
-        inputbox = self.browser.find_element_by_id('id_new_item')
-        inputbox.send_keys(keys)
+        return self.get_input_box().send_keys(keys)

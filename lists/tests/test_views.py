@@ -6,7 +6,7 @@ from django.utils.html import escape
 
 from ..views import home_page
 from ..models import Item, List
-from ..forms import ItemForm
+from ..forms import ItemForm, ITEM_FORM_FIELD_TEXT
 
 
 class HomePageTest(TestCase):
@@ -58,7 +58,7 @@ class ListViewTest(TestCase):
 
         self.client.post(
             '/lists/{}/'.format(correct_list.id),
-            data={'item_text': 'New item!'},
+            data={ITEM_FORM_FIELD_TEXT: 'New item!'},
         )
 
         self.assertEqual(Item.objects.count(), 1)
@@ -73,7 +73,7 @@ class ListViewTest(TestCase):
 
         response = self.client.post(
             '/lists/{}/'.format(correct_list.id),
-            data={'item_text': 'New item!'},
+            data={ITEM_FORM_FIELD_TEXT: 'New item!'},
         )
 
         self.assertRedirects(response, '/lists/{}/'.format(correct_list.id))
@@ -83,7 +83,7 @@ class ListViewTest(TestCase):
 
         response = self.client.post(
             '/lists/{}/'.format(list_.id),
-            data={'item_text': ''},
+            data={ITEM_FORM_FIELD_TEXT: ''},
         )
 
         expected_error = escape("You can't have an empty list item!")
@@ -96,7 +96,7 @@ class ListViewTest(TestCase):
 
         self.client.post(
             '/lists/{}/'.format(list_.id),
-            data={'item_text': ''},
+            data={ITEM_FORM_FIELD_TEXT: ''},
         )
 
         self.assertEqual(Item.objects.filter(list=list_.id).count(), 0)
@@ -106,11 +106,25 @@ class NewListTest(TestCase):
 
     def test_block_get(self):
         response = self.client.get('/lists/new')
+
         self.assertEqual(response.status_code, 405)
+
+    def test_get_redirect_to_home(self):
+        response = self.client.get('/lists/new')
+
+        self.assertTemplateUsed(response, 'lists/home.html')
 
     def test_fail_400_bad_request(self):
         response = self.client.post('/lists/new')
+
         self.assertEqual(response.status_code, 400)
+
+    def test_fail_bad_request_redirects_to_home(self):
+        response = self.client.post('/lists/new')
+
+        self.assertTemplateUsed(response, 'lists/home.html')
+        expected_error = escape("Bad request.")
+        self.assertContains(response, expected_error, status_code=400)
 
     def test_saving_a_post(self):
         my_item = 'Some to-do item'
@@ -118,7 +132,7 @@ class NewListTest(TestCase):
         self.client.post(
             '/lists/new',
             data={
-                'item_text': my_item,
+                ITEM_FORM_FIELD_TEXT: my_item,
             },
         )
 
@@ -130,20 +144,22 @@ class NewListTest(TestCase):
         response = self.client.post(
             '/lists/new',
             data={
-                'item_text': 'asdf',
+                ITEM_FORM_FIELD_TEXT: 'asdf',
             },
         )
         list_ = List.objects.first()
         self.assertRedirects(response, '/lists/{}/'.format(list_.id))
 
     def test_validation_errors_are_sent_back_to_home_page(self):
-        response = self.client.post('/lists/new', data={'item_text': ''})
+        response = self.client.post('/lists/new', data={
+            ITEM_FORM_FIELD_TEXT: '',
+        })
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'lists/home.html')
         expected_error = escape("You can't have an empty list item!")
         self.assertContains(response, expected_error)
 
     def test_invalid_items_not_saved(self):
-        self.client.post('/lists/new', data={'item_text': ''})
+        self.client.post('/lists/new', data={ITEM_FORM_FIELD_TEXT: ''})
         self.assertEqual(List.objects.count(), 0)
         self.assertEqual(Item.objects.count(), 0)

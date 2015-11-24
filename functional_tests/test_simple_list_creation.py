@@ -18,7 +18,7 @@ class NewVisitorTest(FunctionalTest):
         self.assertIn('To-Do', self.browser.title)
 
         # Prompt to enter a new item immediately
-        inputbox = self.browser.find_element_by_id('id_new_item')
+        inputbox = self.get_input_box()
         self.assertEqual(
             inputbox.get_attribute('placeholder'),
             'Enter a to-do item'
@@ -38,9 +38,7 @@ class NewVisitorTest(FunctionalTest):
 
         # Add another item is presented to the user.
         # This time: 'put butters', return..
-        inputbox = self.browser.find_element_by_id('id_new_item')
-        inputbox.send_keys('put butters')
-        inputbox.send_keys(Keys.ENTER)
+        self.add_new_item('put butters\n')
 
         # Page updates, both items showing.
         self.assertRowsInTable([
@@ -59,9 +57,7 @@ class NewVisitorTest(FunctionalTest):
         self.assertNotIn('put butters', page_text)
 
         # frank starts a list
-        inputbox = self.browser.find_element_by_id('id_new_item')
-        inputbox.send_keys('brew coffee')
-        inputbox.send_keys(Keys.ENTER)
+        self.add_new_item('brew coffee\n')
 
         # frank gets his URL
         franks_list_url = self.browser.current_url

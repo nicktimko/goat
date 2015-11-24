@@ -18,3 +18,6 @@ class ItemForm(forms.models.ModelForm):
         error_messages = {
             'text': {'required': EMPTY_ITEM_ERROR}
         }
+
+#ITEM_FORM_FIELD_TEXT = ItemForm()['text'].id_for_label
+ITEM_FORM_FIELD_TEXT = 'text'
