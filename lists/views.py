@@ -18,10 +18,7 @@ def view_list(request, list_id):
     if request.method == 'POST':
         form = ItemForm(data=request.POST)
         if form.is_valid():
-            Item.objects.create(
-                text=request.POST[ITEM_FORM_FIELD_TEXT],
-                list=list_,
-            )
+            form.save(for_list=list_)
             return redirect(list_)
 
     return render(request, 'lists/list.html', context={
@@ -31,22 +28,14 @@ def view_list(request, list_id):
 
 
 def new_list(request):
-    # if request.method != 'POST':
-    #     return render(request, 'lists/home.html', status=405, context={})
+    if request.method != 'POST':
+        form = ItemForm()
+        return render(request, 'lists/home.html', context={'form': form})
 
     form = ItemForm(data=request.POST)
-
-    item_text = request.POST[ITEM_FORM_FIELD_TEXT]
-    # try:
-    #     item_text = request.POST[ITEM_FORM_FIELD_TEXT]
-    # except KeyError:
-    #     return render(request, 'lists/home.html', status=400, context={
-    #         'form': form
-    #     })
-
     if form.is_valid():
         list_ = List.objects.create()
-        item = Item.objects.create(text=item_text, list=list_)
+        form.save(for_list=list_)
         return redirect(list_)
 
     else:

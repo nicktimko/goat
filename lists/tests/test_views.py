@@ -1,6 +1,6 @@
 from unittest import skip
 
-from django.core.urlresolvers import resolve
+from django.core.urlresolvers import reverse
 from django.http import HttpRequest
 from django.template.loader import render_to_string
 from django.test import TestCase
@@ -43,11 +43,11 @@ class HomePageTest(ViewTestCase):
 class ListViewTest(ViewTestCase):
 
     def url(self, id):
-        return '/lists/{}/'.format(id)
+        return reverse('view_list', args=[str(id)])
 
     def test_uses_list_template(self):
         list_ = List.objects.create()
-        response = self.client.get('/lists/{}/'.format(list_.id))
+        response = self.client.get(self.url(list_.id))
         self.assertTemplateUsed(response, 'lists/list.html')
 
     def test_displays_items_for_corresponding_list(self):
@@ -58,7 +58,7 @@ class ListViewTest(ViewTestCase):
         Item.objects.create(text='get cheese', list=other_list)
         Item.objects.create(text='get milk', list=other_list)
 
-        response = self.client.get('/lists/{}/'.format(correct_list.id))
+        response = self.client.get(self.url(correct_list.id))
 
         self.assertContains(response, 'get coffee')
         self.assertContains(response, 'get tea')
@@ -70,7 +70,7 @@ class ListViewTest(ViewTestCase):
         correct_list = List.objects.create()
         another_list = List.objects.create()
 
-        response = self.client.get('/lists/{}/'.format(correct_list.id))
+        response = self.client.get(self.url(correct_list.id))
 
         self.assertEqual(response.context['list'], correct_list)
 
@@ -93,7 +93,7 @@ class ListViewTest(ViewTestCase):
 
         response = self.post_item('New item!', [correct_list.id])
 
-        self.assertRedirects(response, '/lists/{}/'.format(correct_list.id))
+        self.assertRedirects(response, self.url(correct_list.id))
 
     def test_invalid_input_displays_error(self):
         response = self.post_item('', [List.objects.create().id])
@@ -121,38 +121,22 @@ class ListViewTest(ViewTestCase):
 class NewListTest(ViewTestCase):
 
     def url(self):
-        return '/lists/new'
+        return reverse('new_list')
 
-    @skip
-    def test_block_get(self):
-        response = self.client.get('/lists/new')
-
-        self.assertEqual(response.status_code, 405)
-
-    @skip
     def test_get_redirect_to_home(self):
-        response = self.client.get('/lists/new')
-
+        response = self.client.get(self.url())
         self.assertTemplateUsed(response, 'lists/home.html')
 
-    @skip
-    def test_fail_400_bad_request(self):
-        response = self.post_item(no_data=True)
+    def test_get_shows_no_error(self):
+        response = self.client.get(self.url())
+        self.assertNotContains(response, escape(EMPTY_ITEM_ERROR))
 
-        self.assertEqual(response.status_code, 400)
-
-    @skip
     def test_fail_bad_request_redirects_to_home(self):
         response = self.post_item(no_data=True)
-
         self.assertTemplateUsed(response, 'lists/home.html')
-        expected_error = escape("Bad request.")
-        self.assertContains(response, expected_error, status_code=400)
 
-    @skip
     def test_after_bad_request_form_still_there(self):
         response = self.post_item(no_data=True)
-
         self.assertIsInstance(response.context['form'], ItemForm)
 
     def test_saving_a_post(self):
@@ -167,7 +151,7 @@ class NewListTest(ViewTestCase):
         response = self.post_item('asdf')
 
         list_ = List.objects.first()
-        self.assertRedirects(response, '/lists/{}/'.format(list_.id))
+        self.assertRedirects(response, reverse('view_list', args=[list_.id]))
 
     def test_invalid_input_renders_home_template(self):
         response = self.post_item('')
