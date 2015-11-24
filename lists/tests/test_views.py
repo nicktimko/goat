@@ -6,9 +6,9 @@ from django.template.loader import render_to_string
 from django.test import TestCase
 from django.utils.html import escape
 
-from ..views import home_page
-from ..models import Item, List
-from ..forms import ItemForm, ITEM_FORM_FIELD_TEXT, EMPTY_ITEM_ERROR
+from lists.views import home_page
+from lists.models import Item, List
+from lists.forms import ItemForm, ITEM_FORM_FIELD_TEXT, EMPTY_ITEM_ERROR
 
 class ViewTestCase(TestCase):
 

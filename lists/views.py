@@ -3,8 +3,8 @@ from django.http import HttpResponseBadRequest
 from django.shortcuts import render, redirect
 from django.views.decorators.http import require_http_methods
 
-from .models import Item, List
-from .forms import ItemForm, ITEM_FORM_FIELD_TEXT
+from lists.models import Item, List
+from lists.forms import ItemForm, ITEM_FORM_FIELD_TEXT
 
 
 def home_page(request):
