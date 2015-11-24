@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 
 from lists.models import List
 from lists.forms import ExistingListItemForm, ItemForm
@@ -9,7 +9,7 @@ def home_page(request):
 
 
 def view_list(request, list_id):
-    list_ = List.objects.get(id=list_id)
+    list_ = get_object_or_404(List, id=list_id)
     form = ExistingListItemForm(for_list=list_)
 
     if request.method == 'POST':

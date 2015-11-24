@@ -138,6 +138,10 @@ class ListViewTest(ViewTestCase):
         self.cause_duplicate()
         self.assertEqual(1, Item.objects.count())
 
+    def test_404_on_no_list(self):
+        response = self.client.get(self.url(1))
+        self.assertEqual(response.status_code, 404)
+
 
 class NewListTest(ViewTestCase):
 
