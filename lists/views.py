@@ -6,7 +6,6 @@ from django.views.decorators.http import require_http_methods
 from .models import Item, List
 from .forms import ItemForm, ITEM_FORM_FIELD_TEXT
 
-EMPTY_LIST_ERROR = "You can't have an empty list item!"
 
 def home_page(request):
     return render(request, 'lists/home.html', {'form': ItemForm()})
@@ -14,24 +13,20 @@ def home_page(request):
 
 def view_list(request, list_id):
     list_ = List.objects.get(id=list_id)
-    error = None
+    form = ItemForm()
 
     if request.method == 'POST':
-        try:
-            item = Item(
+        form = ItemForm(data=request.POST)
+        if form.is_valid():
+            Item.objects.create(
                 text=request.POST[ITEM_FORM_FIELD_TEXT],
                 list=list_,
             )
-            item.full_clean()
-            item.save()
             return redirect(list_)
-        except ValidationError:
-            error = EMPTY_LIST_ERROR
 
-    items = Item.objects.filter(list=list_)
     return render(request, 'lists/list.html', context={
         'list': list_,
-        'error': error,
+        'form': form,
     })
 
 
