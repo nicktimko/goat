@@ -1,12 +1,7 @@
-from unittest import skip
-
 from django.core.urlresolvers import reverse
-from django.http import HttpRequest
-from django.template.loader import render_to_string
 from django.test import TestCase
 from django.utils.html import escape
 
-from lists.views import home_page
 from lists.models import Item, List
 from lists.forms import (
     ExistingListItemForm,
@@ -15,6 +10,7 @@ from lists.forms import (
     EMPTY_ITEM_ERROR,
     ITEM_FORM_FIELD_TEXT,
 )
+
 
 class ViewTestCase(TestCase):
 
@@ -72,18 +68,18 @@ class ListViewTest(ViewTestCase):
         self.assertNotContains(response, 'get milk')
 
     def test_passes_correect_list_to_template(self):
-        other_list = List.objects.create()
+        List.objects.create()
         correct_list = List.objects.create()
-        another_list = List.objects.create()
+        List.objects.create()
 
         response = self.client.get(self.url(correct_list.id))
 
         self.assertEqual(response.context['list'], correct_list)
 
     def test_can_save_a_post_request_to_existing_list(self):
-        other_list = List.objects.create()
+        List.objects.create()
         correct_list = List.objects.create()
-        another_list = List.objects.create()
+        List.objects.create()
 
         self.post_item('New item!', [correct_list.id])
 
@@ -93,9 +89,9 @@ class ListViewTest(ViewTestCase):
         self.assertEqual(new_item.list, correct_list)
 
     def test_redirects_to_list_view(self):
-        other_list = List.objects.create()
+        List.objects.create()
         correct_list = List.objects.create()
-        another_list = List.objects.create()
+        List.objects.create()
 
         response = self.post_item('New item!', [correct_list.id])
 
@@ -126,7 +122,7 @@ class ListViewTest(ViewTestCase):
 
     def cause_duplicate(self):
         list_ = List.objects.create()
-        item = Item.objects.create(list=list_, text='Bread')
+        Item.objects.create(list=list_, text='Bread')
         response = self.post_item('Bread', [list_.id])
         return response
 
@@ -139,7 +135,7 @@ class ListViewTest(ViewTestCase):
         self.assertTemplateUsed(response, 'lists/list.html')
 
     def test_duplicate_not_saved(self):
-        response = self.cause_duplicate()
+        self.cause_duplicate()
         self.assertEqual(1, Item.objects.count())
 
 
@@ -166,7 +162,7 @@ class NewListTest(ViewTestCase):
 
     def test_saving_a_post(self):
         my_item = 'Some to-do item'
-        response = self.post_item(my_item)
+        self.post_item(my_item)
 
         self.assertEqual(Item.objects.count(), 1)
         new_item = Item.objects.first()

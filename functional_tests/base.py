@@ -27,7 +27,7 @@ class FunctionalTest(StaticLiveServerTestCase):
 
     def tearDown(self):
         # RAGNAROK INVOKED
-        self.browser.refresh() # shut up Windows
+        self.browser.refresh()  # shut up Windows
         self.browser.quit()
 
     def assertRowsInTable(self, expected_texts):

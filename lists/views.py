@@ -1,10 +1,7 @@
-from django.core.exceptions import ValidationError
-from django.http import HttpResponseBadRequest
 from django.shortcuts import render, redirect
-from django.views.decorators.http import require_http_methods
 
-from lists.models import Item, List
-from lists.forms import ExistingListItemForm, ItemForm, ITEM_FORM_FIELD_TEXT
+from lists.models import List
+from lists.forms import ExistingListItemForm, ItemForm
 
 
 def home_page(request):

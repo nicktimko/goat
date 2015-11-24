@@ -46,7 +46,7 @@ class NewVisitorTest(FunctionalTest):
             '2. put butters',
         ])
 
-        ## remove session from browser
+        # ===== remove session from browser =====
         self.browser.quit()
         self.browser = webdriver.Chrome()
 

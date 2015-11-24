@@ -8,6 +8,7 @@ DUPLICATE_ITEM_ERROR = "You already have that in your list!"
 
 ITEM_FORM_FIELD_TEXT = 'text'
 
+
 class ItemForm(forms.models.ModelForm):
 
     def save(self, for_list):
@@ -21,8 +22,8 @@ class ItemForm(forms.models.ModelForm):
             'text': forms.fields.TextInput(attrs={
                 'placeholder': 'Enter a to-do item',
                 'class': 'form-control input-lg',
-            }
-        )}
+            })
+        }
         error_messages = {
             'text': {'required': EMPTY_ITEM_ERROR}
         }
@@ -48,7 +49,7 @@ class ExistingListItemForm(ItemForm):
         except ValidationError as e:
             e.error_dict = {'text': [DUPLICATE_ITEM_ERROR]}
             # ?!? private method?
-            # maybe: https://docs.djangoproject.com/en/1.8/topics/forms/modelforms/#validation-on-a-modelform
+            # maybe: https://docs.djangoproject.com/en/1.8/topics/forms/modelforms/#validation-on-a-modelform # noqa
             self._update_errors(e)
 
     def save(self):
