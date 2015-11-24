@@ -8,7 +8,7 @@ from django.utils.html import escape
 
 from lists.views import home_page
 from lists.models import Item, List
-from lists.forms import ItemForm, ITEM_FORM_FIELD_TEXT, EMPTY_ITEM_ERROR
+from lists.forms import ItemForm, ITEM_FORM_FIELD_TEXT, EMPTY_ITEM_ERROR, DUPLICATE_ITEM_ERROR
 
 class ViewTestCase(TestCase):
 
@@ -117,6 +117,25 @@ class ListViewTest(ViewTestCase):
         response = self.client.get(self.url(list_.id))
         self.assertIsInstance(response.context['form'], ItemForm)
         self.assertContains(response, 'name="text"')
+
+    def cause_duplicate(self):
+        list_ = List.objects.create()
+        item = Item.objects.create(list=list_, text='Bread')
+        response = self.post_item('Bread', [list_.id])
+        return response
+
+    def test_duplicate_error_displays_error(self):
+        response = self.cause_duplicate()
+        self.assertContains(response, escape(DUPLICATE_ITEM_ERROR))
+
+    def test_duplicate_error_returns_to_list(self):
+        response = self.cause_duplicate()
+        self.assertTemplateUsed(response, 'lists/list.html')
+
+    def test_duplicate_not_saved(self):
+        response = self.cause_duplicate()
+        self.assertEqual(1, Item.objects.count())
+
 
 class NewListTest(ViewTestCase):
 
