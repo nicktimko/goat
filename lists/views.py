@@ -36,22 +36,25 @@ def view_list(request, list_id):
 
 
 def new_list(request):
-    if request.method != 'POST':
-        return render(request, 'lists/home.html', context={}, status=405)
+    # if request.method != 'POST':
+    #     return render(request, 'lists/home.html', status=405, context={})
 
-    try:
-        item_text = request.POST[ITEM_FORM_FIELD_TEXT]
-    except KeyError:
-        return render(request, 'lists/home.html', context={'error': 'Bad request.'}, status=400)
+    form = ItemForm(data=request.POST)
 
-    list_ = List.objects.create()
-    item = Item.objects.create(text=item_text, list=list_)
+    item_text = request.POST[ITEM_FORM_FIELD_TEXT]
+    # try:
+    #     item_text = request.POST[ITEM_FORM_FIELD_TEXT]
+    # except KeyError:
+    #     return render(request, 'lists/home.html', status=400, context={
+    #         'form': form
+    #     })
 
-    try:
-        item.full_clean()
+    if form.is_valid():
+        list_ = List.objects.create()
+        item = Item.objects.create(text=item_text, list=list_)
         return redirect(list_)
-    except ValidationError:
-        list_.delete()
+
+    else:
         return render(request, 'lists/home.html', context={
-            'error': EMPTY_LIST_ERROR,
+            'form': form,
         })
