@@ -14,11 +14,11 @@ def configure():
 
 
 def _create_upstart_script(site_folder):
-    ...
+    Ellipsis
 
 
 def _create_enable_nginx_site(site_folder):
-    ...
+    Ellipsis
 
 
 def deploy():
