@@ -4,7 +4,7 @@ from django.core.exceptions import ValidationError
 from lists.models import Item
 
 EMPTY_ITEM_ERROR = "You can't have an empty list item!"
-DUPLICATE_ITEM_ERROR = "You already have this in your list!"
+DUPLICATE_ITEM_ERROR = "You already have that in your list!"
 
 ITEM_FORM_FIELD_TEXT = 'text'
 
@@ -50,3 +50,6 @@ class ExistingListItemForm(ItemForm):
             # ?!? private method?
             # maybe: https://docs.djangoproject.com/en/1.8/topics/forms/modelforms/#validation-on-a-modelform
             self._update_errors(e)
+
+    def save(self):
+        return forms.models.ModelForm.save(self)

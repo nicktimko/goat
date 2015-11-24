@@ -42,4 +42,4 @@ class ItemValidationTest(FunctionalTest):
         # An error pops up saying that's already there
         self.assertRowsInTable(['1. Get bourbon'])
         error = self.browser.find_element_by_css_selector('.has-error')
-        self.assertEqual('You already have that in your list!')
+        self.assertEqual(error.text, 'You already have that in your list!')

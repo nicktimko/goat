@@ -4,7 +4,7 @@ from django.shortcuts import render, redirect
 from django.views.decorators.http import require_http_methods
 
 from lists.models import Item, List
-from lists.forms import ItemForm, ITEM_FORM_FIELD_TEXT
+from lists.forms import ExistingListItemForm, ItemForm, ITEM_FORM_FIELD_TEXT
 
 
 def home_page(request):
@@ -13,12 +13,12 @@ def home_page(request):
 
 def view_list(request, list_id):
     list_ = List.objects.get(id=list_id)
-    form = ItemForm()
+    form = ExistingListItemForm(for_list=list_)
 
     if request.method == 'POST':
-        form = ItemForm(data=request.POST)
+        form = ExistingListItemForm(for_list=list_, data=request.POST)
         if form.is_valid():
-            form.save(for_list=list_)
+            form.save()
             return redirect(list_)
 
     return render(request, 'lists/list.html', context={
